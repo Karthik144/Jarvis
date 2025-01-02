@@ -1,0 +1,39 @@
+# Node.js dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Logs
+logs/
+*.log
+
+# Environment variables
+.env
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Java files
+*.class
+*.jar
+
+# Temporary files
+tmp/
+temp/
+
+# Other files to ignore
+*.bak
+*.swp
