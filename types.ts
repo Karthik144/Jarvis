@@ -11,6 +11,33 @@ type TokenConfig = {
   symbol: string;
 };
 
+type MorphoMarketParamsType = {
+  loanToken: string;
+  collateralToken: string;
+  irm: string;
+  lltv: bigint;
+  oracle: string;
+};
+
+type MorphoVaultMarket = {
+  allocation: number;
+  marketId: string;
+  marketCollateral: TokenConfig;
+  marketApy: number;
+  marketLiquidity: Amount;
+  marketLiquidityUsd: number;
+  marketLoanToValue: number;
+  totalSupplied: Amount;
+  totalSuppliedUsd: number;
+};
+
+type MarketReward = {
+  token: TokenConfig;
+  supplyApr: number;
+  borrowApr: number;
+  liquidStakingApr: number;
+};
+
 export type Market = {
   marketKey: string;
   chainId: number;
@@ -45,11 +72,52 @@ export type Market = {
   rewards: MarketReward[];
 };
 
-type MarketReward = {
-  token: TokenConfig;
-  supplyApr: number;
-  borrowApr: number;
-  liquidStakingApr: number;
+export type MorphoMarket = {
+  chainId: number;
+  marketId: string;
+  marketKey: string;
+  deprecated: boolean;
+  loanToValue: number;
+  performanceFee: number;
+  loanToken: TokenConfig;
+  loanTokenPrice: number;
+  collateralAssets: Amount;
+  collateralToken: TokenConfig;
+  collateralTokenPrice: number;
+  totalSupply: Amount;
+  totalSupplyUsd: number;
+  totalSupplyInLoanToken: Amount;
+  totalBorrows: Amount;
+  totalBorrowsUsd: number;
+  availableLiquidity: Amount;
+  availableLiquidityUsd: number;
+  marketParams: MorphoMarketParamsType;
+  baseSupplyApy: number;
+  rewardsSupplyApy: number;
+  baseBorrowApy: number;
+  rewardsBorrowApy: number;
+  totalSupplyApr: number;
+  totalBorrowApr: number;
+};
+
+export type MorphoVault = {
+  chainId: number;
+  vaultKey: string;
+  vaultToken: TokenConfig;
+  underlyingToken: TokenConfig;
+  vaultSupply: Amount;
+  totalSupply: Amount;
+  totalSupplyUsd: number;
+  totalLiquidity: Amount;
+  totalLiquidityUsd: number;
+  underlyingPrice: number;
+  baseApy: number;
+  rewardsApy: number;
+  totalApy: number;
+  performanceFee: number;
+  curators: string[];
+  timelock: number;
+  markets: MorphoVaultMarket[];
 };
 
 export type MarketSnapshot = {
@@ -63,5 +131,17 @@ export type MarketSnapshot = {
   totalLiquidityUsd: number;
   baseSupplyApy: number;
   baseBorrowApy: number;
+  timestamp: number;
+};
+
+export type MorphoVaultSnapshot = {
+  chainId: number;
+  vaultAddress: string;
+  totalSupply: number;
+  totalSupplyUsd: number;
+  totalBorrows: number;
+  totalBorrowsUsd: number;
+  totalLiquidity: number;
+  totalLiquidityUsd: number;
   timestamp: number;
 };
