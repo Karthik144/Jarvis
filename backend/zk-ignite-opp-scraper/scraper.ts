@@ -1,65 +1,43 @@
-import puppeteer from "puppeteer";
+import axios from "axios";
+import { Opportunity } from "./types";
 
-interface OpportunityData {
-  opportunityName: string;
-  totalDailyRewards: string;
-  baseProtocolName: string;
-  aprPercentage: string;
-}
+const API_BASE_URL = "https://api.merkl.xyz/v4";
 
-async function scrapeClientRenderedSite(url: string) {
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-
+async function main() {
   try {
-    await page.goto(url, { waitUntil: "networkidle0" });
+    console.log("Fetching Merkl opportunities...");
+    const response = await axios.get<Opportunity[]>(
+      `${API_BASE_URL}/opportunities?chain=324&action=POOL,LEND&status=LIVE&items=100`
+    );
 
-    // Wait for the card elements to load
-    await page.waitForSelector("div.flex.border-1.border-main-0");
+    const data = response.data;
+    console.log("Raw DATA:", data);
+    console.log(`Total opportunities before filtering: ${data.length}\n`);
 
-    const data = await page.evaluate(() => {
-      const cards = Array.from(
-        document.querySelectorAll("div.flex.border-1.border-main-0")
+    // Filter opportunities to only include chainId 324
+    const filteredOpportunities = data.filter(
+      (opportunity) => opportunity.chainId === 324
+    );
+
+    console.log(
+      `Total opportunities after filtering: ${filteredOpportunities.length}\n`
+    );
+
+    console.log("Filtered Opportunities:", filteredOpportunities);
+
+    return filteredOpportunities;
+  } catch (error: any) {
+    if (error?.response) {
+      console.error(
+        `API Error: ${error.response.status} - ${error.response.statusText}`
       );
-
-      return cards.map((card) => {
-        const opportunityName =
-          card.querySelector("h3.text-main-12")?.textContent?.trim() || "N/A";
-        const totalDailyRewards =
-          card.querySelector("h3.text-main-11")?.textContent?.trim() || "N/A";
-        const baseProtocolName =
-          card
-            .querySelector(
-              "button.flex.items-center:not(:has(span.font-normal))"
-            )
-            ?.textContent?.trim() || "N/A";
-        const aprPercentage =
-          card
-            .querySelector("button.flex.items-center:has(span.font-normal)")
-            ?.childNodes[0]?.textContent?.trim() || "N/A";
-
-        return {
-          opportunityName,
-          totalDailyRewards,
-          baseProtocolName,
-          aprPercentage,
-        };
-      });
-    });
-
-    console.log(data);
-    return data;
-  } catch (error) {
-    console.error("An error occurred:", error);
-  } finally {
-    await browser.close();
+    } else if (error?.request) {
+      console.error("No response received from the server");
+    } else {
+      console.error("Error:", error.message);
+    }
+    process.exit(1);
   }
 }
 
-// Usage
-(async () => {
-  const opportunities = await scrapeClientRenderedSite(
-    "https://app.zksyncignite.xyz/opportunities?items=100"
-  );
-  console.log(`Found ${opportunities?.length || 0} opportunities`);
-})();
+main();
