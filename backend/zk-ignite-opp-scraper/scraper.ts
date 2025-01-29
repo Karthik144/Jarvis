@@ -11,7 +11,6 @@ async function main() {
     );
 
     const data = response.data;
-    console.log("Raw DATA:", data);
     console.log(`Total opportunities before filtering: ${data.length}\n`);
 
     // Filter opportunities to only include chainId 324
@@ -19,13 +18,23 @@ async function main() {
       (opportunity) => opportunity.chainId === 324
     );
 
-    console.log(
-      `Total opportunities after filtering: ${filteredOpportunities.length}\n`
+    // Sort opportunities by APR in descending order
+    const sortedOpportunities = filteredOpportunities.sort(
+      (a, b) => b.apr - a.apr
     );
 
-    console.log("Filtered Opportunities:", filteredOpportunities);
+    console.log(
+      `Total opportunities after filtering: ${sortedOpportunities.length}\n`
+    );
 
-    return filteredOpportunities;
+    // Log sorted opportunities with their APRs
+    sortedOpportunities.forEach((opportunity, index) => {
+      console.log(
+        `${index + 1}. ${opportunity.name}: ${opportunity.apr.toFixed(2)}% APR`
+      );
+    });
+
+    return sortedOpportunities;
   } catch (error: any) {
     if (error?.response) {
       console.error(
