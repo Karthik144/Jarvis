@@ -39,7 +39,7 @@ const calculatePoolAPR = (poolData: PoolData, feeTier: number): number => {
 const fetchPoolsAndCalculateAPRs = async (
   chainId: number,
   feeTier: number,
-  apiBaseUrl: string = "https://app.mav.xyz"
+  apiBaseUrl: string = "https://api.mav.xyz"
 ): Promise<PoolAPRResult[]> => {
   try {
     // Fetch pool data from API
@@ -82,4 +82,4 @@ const fetchPoolsAndCalculateAPRs = async (
   }
 };
 
-export { fetchPoolsAndCalculateAPRs, calculatePoolAPR };
+export { fetchPoolsAndCalculateAPRs };
