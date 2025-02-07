@@ -54,6 +54,8 @@ function logOpportunities(dexName: string, opportunities: Opportunity[]): void {
   });
 }
 
+async function fetchMaverickOpportunities(): Promise<void> {
+
 async function main() {
   try {
     console.log("Fetching opportunities for supported DEXes...");
