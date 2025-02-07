@@ -56,7 +56,7 @@ function logOpportunities(dexName: string, opportunities: Opportunity[]): void {
   console.log(`Total opportunities: ${opportunities.length}`);
   opportunities.forEach((opportunity, index) => {
     console.log(
-      `${index + 1}. ${opportunity.name}: ${opportunity.apr.toFixed(2)}% APR`
+      `${index + 1}. ${opportunity.name}: ${opportunity.apr.toFixed(2)}% APR ${opportunity.identifier}`
     );
   });
 }
@@ -77,10 +77,10 @@ async function main() {
     const poolAPRs = await fetchPoolsAndCalculateAPRs(chainId, feeTier);
 
     // Log results
-    console.log("Pool APRs:");
-    poolAPRs.forEach(({ ticker_id, pool_id, apr }) => {
-      console.log(`${ticker_id} (${pool_id}): ${apr}%`);
-    });
+    // console.log("Pool APRs:");
+    // poolAPRs.forEach(({ ticker_id, pool_id, apr }) => {
+    //   console.log(`${ticker_id} (${pool_id}): ${apr}%`);
+    // });
   } catch (error: any) {
     console.error("Runtime error:", error.message);
     process.exit(1);
