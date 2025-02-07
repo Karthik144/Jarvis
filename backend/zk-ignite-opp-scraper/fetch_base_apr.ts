@@ -1,6 +1,6 @@
 import axios from "axios";
 
-interface PoolData {
+interface PancakePoolData {
   feeTier: string;
   totalValueLockedUSD: string;
   feesUSD: string;
@@ -8,6 +8,14 @@ interface PoolData {
     feesUSD: string;
   }[];
 }
+
+interface KoiPoolData {
+    totalValueLockedUSD: string;
+    poolHourData: {
+      feesUSD: string;
+    }[];
+  }
+  
 
 export async function getPancakeSwapAPR(poolAddress: string): Promise<number> {
   const SUBGRAPH_URL = "https://api.studio.thegraph.com/query/45376/exchange-v3-zksync/version/latest";
@@ -27,20 +35,20 @@ export async function getPancakeSwapAPR(poolAddress: string): Promise<number> {
 
   try {
     const response = await axios.post(SUBGRAPH_URL, { query });
-    const poolData: PoolData = response.data.data.pool;
+    const PancakePoolData: PancakePoolData = response.data.data.pool;
 
-    if (!poolData) {
+    if (!PancakePoolData) {
       console.error("Pool not found in subgraph");
       return 0;
     }
 
-    const weeklyFees = poolData.poolDayData.reduce(
+    const weeklyFees = PancakePoolData.poolDayData.reduce(
       (acc, day) => acc + parseFloat(day.feesUSD),
       0
     );
 
     const annualFees = weeklyFees * 52;
-    const tvlUSD = parseFloat(poolData.totalValueLockedUSD);
+    const tvlUSD = parseFloat(PancakePoolData.totalValueLockedUSD);
 
     if (tvlUSD === 0) return 0;
 
@@ -52,6 +60,54 @@ export async function getPancakeSwapAPR(poolAddress: string): Promise<number> {
     return 0;
   }
 }
-//INVOCATION
+
+export async function getKoiFinanceAPR(poolAddress: string): Promise<number> {
+    const api_key = '5db37e23ce820eb4087f65bc3d79438c'
+    const SUBGRAPH_URL = `https://gateway.thegraph.com/api/${api_key}/subgraphs/id/3gLgwpvmNybVfKeVLKcFLnpLvbtiwTQ4rLceVP7gWcjT`;
+    
+    const query = `
+      {
+        pool(id: "${poolAddress.toLowerCase()}") {
+          totalValueLockedUSD
+          poolHourData(first: 168, orderBy: periodStartUnix, orderDirection: desc) {
+            feesUSD
+          }
+        }
+      }
+    `;
+  
+    try {      
+      const response = await axios.post(SUBGRAPH_URL, { query });
+      const poolData: KoiPoolData = response.data.data.pool;
+  
+      if (!poolData) {
+        console.error("Koi pool not found");
+        return 0;
+      }
+  
+      // Calculate weekly fees from 168 hours (7 days)
+      const weeklyFees = poolData.poolHourData.reduce(
+        (acc, hour) => acc + parseFloat(hour.feesUSD),
+        0
+      );
+  
+      const annualFees = weeklyFees * 52;
+      const tvlUSD = parseFloat(poolData.totalValueLockedUSD);
+  
+  
+      const feeAPR = (annualFees / tvlUSD) * 100;
+      return feeAPR;
+  
+    } catch (error) {
+      console.error("Koi APR error:", error instanceof Error ? error.message : error);
+      return 0;
+    }
+  }
+//INVOCATIONS
+
 //P.s. the subgraph rate limit is heinous ~1 per 2secs 
-getPancakeSwapAPR("0x5631fE6d29E3CB717517DA05A9970e499DEF5e31").then(apr => console.log("APR:", apr));
+//getPancakeSwapAPR("0x5631fE6d29E3CB717517DA05A9970e499DEF5e31").then(apr => console.log("APR:", apr));
+
+//P.s. only test this one in production, using a non-public graph so have 100,000 query limit
+// returned APR is base + boosted from ZK
+// getKoiFinanceAPR("0x9c40de601340650bac1813f925f7cff9178c4c2c").then(apr => console.log("Koi APR:", apr));
