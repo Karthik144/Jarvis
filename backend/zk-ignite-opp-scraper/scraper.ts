@@ -42,7 +42,7 @@ async function fetchOpportunities(dex: DexConfig): Promise<EnhancedOpportunity[]
           baseApr = await getPancakeSwapAPR(opportunity.identifier);
         } else if (dex.name === "koi") {
           // Only uncomment in production or for critical tests
-          baseApr = await getKoiFinanceAPR(opportunity.identifier);
+          // baseApr = await getKoiFinanceAPR(opportunity.identifier);
         }
         return { 
           ...opportunity, 
