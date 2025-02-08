@@ -46,3 +46,7 @@ export interface Opportunity {
     breakdowns: any[];
   };
 }
+
+export interface EnhancedOpportunity extends Opportunity {
+  baseApr: number;
+}

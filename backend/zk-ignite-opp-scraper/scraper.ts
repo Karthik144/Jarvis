@@ -1,12 +1,18 @@
 import axios from "axios";
 import { Opportunity } from "./types";
 import { fetchPoolsAndCalculateAPRs } from "./maverick-apr-calculator";
+import { getKoiFinanceAPR, getPancakeSwapAPR } from "./fetch_base_apr";
 
 const API_BASE_URL = "https://api.merkl.xyz/v4";
 
 interface DexConfig {
   name: string;
   actions: string[];
+}
+
+interface EnhancedOpportunity extends Opportunity {
+  baseApr: number;
+  dexName: string; 
 }
 
 const supportedDexes: DexConfig[] = [
@@ -16,7 +22,7 @@ const supportedDexes: DexConfig[] = [
   { name: "pancakeswap-v3", actions: ["POOL"] },
 ];
 
-async function fetchOpportunities(dex: DexConfig): Promise<Opportunity[]> {
+async function fetchOpportunities(dex: DexConfig): Promise<EnhancedOpportunity[]> {
   try {
     const response = await axios.get(`${API_BASE_URL}/opportunities`, {
       params: {
@@ -27,60 +33,63 @@ async function fetchOpportunities(dex: DexConfig): Promise<Opportunity[]> {
         items: 100,
       },
     });
-    return response.data;
-  } catch (error: any) {
-    console.error(
-      `Error fetching ${dex.name}:`,
-      error.response?.status || error.message
+    const opportunities: Opportunity[] = response.data;
+
+    const enhancedOpportunities: EnhancedOpportunity[] = await Promise.all(
+      opportunities.map(async (opportunity) => {
+        let baseApr = 0;
+        if (dex.name === "pancakeswap-v3") {
+          baseApr = await getPancakeSwapAPR(opportunity.identifier);
+        } else if (dex.name === "koi") {
+          // Only uncomment in production or for critical tests
+          baseApr = await getKoiFinanceAPR(opportunity.identifier);
+        }
+        return { 
+          ...opportunity, 
+          baseApr,
+          dexName: dex.name
+        };
+      })
     );
+
+    return enhancedOpportunities;
+  } catch (error: any) {
+  console.error(
+    `Error fetching ${dex.name}:`,
+    error.response?.status || error.message
+  );
     return [];
   }
 }
 
-function filterAndSortOpportunities(
-  opportunities: Opportunity[]
-): Opportunity[] {
-  return opportunities
-    .filter(
-      (opportunity) =>
-        opportunity.chainId === 324 &&
-        opportunity.protocol.id === opportunity.protocol.id.toLowerCase()
-    )
-    .sort((a, b) => b.apr - a.apr);
-}
-
-function logOpportunities(dexName: string, opportunities: Opportunity[]): void {
-  console.log(
-    `\n${dexName.charAt(0).toUpperCase() + dexName.slice(1)} opportunities:`
-  );
-  console.log(`Total opportunities: ${opportunities.length}`);
-  opportunities.forEach((opportunity, index) => {
-    console.log(
-      `${index + 1}. ${opportunity.name}: ${opportunity.apr.toFixed(2)}% APR ${opportunity.identifier}`
-    );
-  });
-}
-
 async function main() {
   try {
-    console.log("Fetching opportunities for supported DEXes...");
-
+    console.log("Fetching opportunities for all DEXes...");
+    const combinedOpportunities: EnhancedOpportunity[] = [];
+    
     for (const dex of supportedDexes) {
       const opportunities = await fetchOpportunities(dex);
-      const filtered = filterAndSortOpportunities(opportunities);
-      logOpportunities(dex.name, filtered);
+      combinedOpportunities.push(...opportunities);
     }
 
-    const chainId = 324; // ZKSync mainnet
-    const feeTier = 0.02; // 0.02% fee tier
+    const sorted = combinedOpportunities.sort(
+      (a, b) => (b.apr + b.baseApr) - (a.apr + a.baseApr)
+    );
 
-    const poolAPRs = await fetchPoolsAndCalculateAPRs(chainId, feeTier);
+    console.log("\nAll opportunities sorted by total APR:");
+    console.log(`Total opportunities: ${sorted.length}`);
+    sorted.forEach((opportunity, index) => {
+      const combinedApr = opportunity.apr + opportunity.baseApr;
+      const depositLink = opportunity.depositUrl 
+      ? `\u001B]8;;${opportunity.depositUrl}\u0007Deposit\u001B]8;;\u0007`
+      : 'No deposit link';
+      console.log(
+        `${index + 1}. [${opportunity.dexName.toUpperCase()}] ${opportunity.name}: ` +
+        `${combinedApr.toFixed(2)}% (Base: ${opportunity.baseApr.toFixed(2)}% + Boosted: ${opportunity.apr.toFixed(2)}%) ` +
+        `${depositLink} | ${opportunity.identifier}`
+      );
+    });
 
-    // Log results
-    // console.log("Pool APRs:");
-    // poolAPRs.forEach(({ ticker_id, pool_id, apr }) => {
-    //   console.log(`${ticker_id} (${pool_id}): ${apr}%`);
-    // });
   } catch (error: any) {
     console.error("Runtime error:", error.message);
     process.exit(1);

@@ -81,7 +81,7 @@ export async function getKoiFinanceAPR(poolAddress: string): Promise<number> {
       const poolData: KoiPoolData = response.data.data.pool;
   
       if (!poolData) {
-        console.error("Koi pool not found");
+        console.error("Koi pool not found", poolAddress.toLowerCase());
         return 0;
       }
   
