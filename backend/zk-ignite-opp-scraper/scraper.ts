@@ -1,7 +1,6 @@
 import axios from "axios";
 import { Opportunity } from "./types";
 import { fetchPoolsAndCalculateAPRs } from "./maverick-apr-calculator";
-
 const API_BASE_URL = "https://api.merkl.xyz/v4";
 
 interface DexConfig {
@@ -56,7 +55,9 @@ function logOpportunities(dexName: string, opportunities: Opportunity[]): void {
   console.log(`Total opportunities: ${opportunities.length}`);
   opportunities.forEach((opportunity, index) => {
     console.log(
-      `${index + 1}. ${opportunity.name}: ${opportunity.apr.toFixed(2)}% APR ${opportunity.identifier}`
+      `${index + 1}. ${opportunity.name}: ${opportunity.apr.toFixed(2)}% APR ${
+        opportunity.identifier
+      }`
     );
   });
 }
@@ -71,10 +72,10 @@ async function main() {
       logOpportunities(dex.name, filtered);
     }
 
-    const chainId = 324; // ZKSync mainnet
-    const feeTier = 0.02; // 0.02% fee tier
+    // const chainId = 324; // ZKSync mainnet
+    // const feeTier = 0.02; // 0.02% fee tier
 
-    const poolAPRs = await fetchPoolsAndCalculateAPRs(chainId, feeTier);
+    // const poolAPRs = await fetchPoolsAndCalculateAPRs(chainId, feeTier);
 
     // Log results
     // console.log("Pool APRs:");
