@@ -1,3 +1,5 @@
+// Merkl Related Types
+
 interface Chain {
   id: number;
   name: string;
@@ -49,4 +51,27 @@ export interface Opportunity {
 
 export interface EnhancedOpportunity extends Opportunity {
   baseApr: number;
+}
+
+// APR Calculation Types
+export interface PancakePoolData {
+  feeTier: string;
+  totalValueLockedUSD: string;
+  feesUSD: string;
+  poolDayData: {
+    feesUSD: string;
+  }[];
+  id: string;
+}
+
+export interface KoiPoolData {
+  totalValueLockedUSD: string;
+  poolHourData: {
+    feesUSD: string;
+  }[];
+  id: string;
+}
+
+export interface APRResult {
+  [poolAddress: string]: number;
 }
