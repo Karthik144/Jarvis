@@ -5,7 +5,7 @@ export async function getPancakeSwapAPR(
   poolAddresses: string[]
 ): Promise<APRResult> {
   // Convert all pool addresses to lowercase for comparison
-  const normalizedPoolAddresses = poolAddresses.map((address) =>
+  const lowercasedPoolAddresses = poolAddresses.map((address) =>
     address.toLowerCase()
   );
 
@@ -38,7 +38,7 @@ export async function getPancakeSwapAPR(
 
     // Filter pools based on the provided pool addresses
     const filteredPools = pools.filter((pool) =>
-      normalizedPoolAddresses.includes(pool.id)
+      lowercasedPoolAddresses.includes(pool.id)
     );
 
     // Calculate APR for each filtered pool
@@ -74,7 +74,7 @@ export async function getKoiFinanceAPR(
   const SUBGRAPH_URL = `https://gateway.thegraph.com/api/${api_key}/subgraphs/id/3gLgwpvmNybVfKeVLKcFLnpLvbtiwTQ4rLceVP7gWcjT`;
 
   // Convert all pool addresses to lowercase for comparison
-  const normalizedPoolAddresses = poolAddresses.map((address) =>
+  const lowercasedPoolAddresses = poolAddresses.map((address) =>
     address.toLowerCase()
   );
 
@@ -105,7 +105,7 @@ export async function getKoiFinanceAPR(
 
     // Filter pools based on the provided pool addresses
     const filteredPools = pools.filter((pool) =>
-      normalizedPoolAddresses.includes(pool.id)
+      lowercasedPoolAddresses.includes(pool.id)
     );
 
     // Calculate APR for each filtered pool
@@ -143,10 +143,9 @@ export async function getKoiFinanceAPR(
   }
 }
 
-//INVOCATIONS
+// INVOCATION EXAMPLES
 
-//P.s. the subgraph rate limit is heinous ~1 per 2secs
-//getPancakeSwapAPR("0x5631fE6d29E3CB717517DA05A9970e499DEF5e31").then(apr => console.log("APR:", apr));
+// P.S. Subgraph Rate Limit: ~1 per 2secs
 
 // const addresses = [
 //   "0x3bF35ac7BF2E4aaF98e007c9C3e0d214562A3DBB",
@@ -167,8 +166,8 @@ export async function getKoiFinanceAPR(
 //   }
 // })();
 
-// P.S. only test this one in production, using a non-public graph so have 100,000 query limit
-// returned APR is base + boosted from ZK
+// P.S. Only test this one in production, using a non-public graph so have 100,000 query limit
+// Note: Returned APR is base + boosted from ZK
 // const addresses = [
 //   "0x9C40DE601340650baC1813f925f7Cff9178c4C2C",
 //   "0x58FB07E1Fd51edd7bBa91f870ff751e67e33Cec5",
