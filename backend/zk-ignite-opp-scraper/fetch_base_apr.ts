@@ -151,51 +151,66 @@ export async function getKoiFinanceAPR(
   }
 }
 
-export async function getSyncSwapAPR(poolAddress: string): Promise<number> {
-  const api_key = "5db37e23ce820eb4087f65bc3d79438c";
-  const SUBGRAPH_URL = `https://gateway.thegraph.com/api/${api_key}/subgraphs/id/Hwzhcxny69Mbk8jH4K4KbEBbGEYxjnJW3RtxzBCRJofq`;
+// export async function getSyncSwapAPR(poolAddress: string): Promise<number> {
+//   const api_key = "5db37e23ce820eb4087f65bc3d79438c";
+//   const SUBGRAPH_URL = `https://gateway.thegraph.com/api/${api_key}/subgraphs/id/Hwzhcxny69Mbk8jH4K4KbEBbGEYxjnJW3RtxzBCRJofq`;
 
-  const query = `
-      {
-        pool(id: "${poolAddress.toLowerCase()}") {
-          totalValueLockedUSD
-          poolHourData(first: 168, orderBy: periodStartUnix, orderDirection: desc) {
-            feesUSD
-          }
-        }
-      }
-    `;
+//   const query = `
+//       {
+//         pool(id: "${poolAddress.toLowerCase()}") {
+//           totalValueLockedUSD
+//           poolHourData(first: 168, orderBy: periodStartUnix, orderDirection: desc) {
+//             feesUSD
+//           }
+//         }
+//       }
+//     `;
 
-  try {
-    const response = await axios.post(SUBGRAPH_URL, { query });
+//     try {
+//       const response = await axios.post(SUBGRAPH_URL, { query });
+//       const poolData: KoiPoolData = response.data.data.pool;
 
-    const poolData: SyncSwapPoolData = response.data.data.pool;
+//       if (!poolData) {
+//         console.error("Koi pool not found", poolAddress.toLowerCase());
+//         return 0;
+//       }
 
-    console.log("poolData", poolData);
-    if (!poolData) {
-      console.error("Koi pool not found");
-      return 0;
-    }
+//       // Calculate weekly fees from 168 hours (7 days)
+//       const weeklyFees = poolData.poolHourData.reduce(
+//         (acc, hour) => acc + parseFloat(hour.feesUSD),
+//         0
+//       );
 
-    // Calculate weekly fees from 168 hours (7 days)
-    const weeklyFees = poolData.poolHourData.reduce(
-      (acc, hour) => acc + parseFloat(hour.feesUSD),
-      0
-    );
+//       const annualFees = weeklyFees * 52;
+//       const tvlUSD = parseFloat(poolData.totalValueLockedUSD);
 
-    const annualFees = weeklyFees * 52;
-    const tvlUSD = parseFloat(poolData.totalValueLockedUSD);
+//       const feeAPR = (annualFees / tvlUSD) * 100;
+//       return feeAPR;
 
-    const feeAPR = (annualFees / tvlUSD) * 100;
-    return feeAPR;
-  } catch (error) {
-    console.error(
-      "Sync Swap APR error:",
-      error instanceof Error ? error.message : error
-    );
-    return 0;
-  }
-}
+//     } catch (error) {
+//       console.error("Koi APR error:", error instanceof Error ? error.message : error);
+//       return 0;
+//     }
+
+//     // Calculate weekly fees from 168 hours (7 days)
+//     const weeklyFees = poolData.poolHourData.reduce(
+//       (acc, hour) => acc + parseFloat(hour.feesUSD),
+//       0
+//     );
+
+//     const annualFees = weeklyFees * 52;
+//     const tvlUSD = parseFloat(poolData.totalValueLockedUSD);
+
+//     const feeAPR = (annualFees / tvlUSD) * 100;
+//     return feeAPR;
+//   } catch (error) {
+//     console.error(
+//       "Sync Swap APR error:",
+//       error instanceof Error ? error.message : error
+//     );
+//     return 0;
+//   }
+// }
 
 //INVOCATIONS
 
