@@ -64,6 +64,12 @@ export interface PancakePoolData {
   id: string;
 }
 
+export interface SyncSwapPoolData { 
+  id: string;
+  reserveUSD: string;
+  volumeUSD: string;
+}
+
 export interface KoiPoolData {
   totalValueLockedUSD: string;
   poolHourData: {
