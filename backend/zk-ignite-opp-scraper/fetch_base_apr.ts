@@ -150,9 +150,7 @@ export async function getSyncSwapAPR(
   console.log("GET SYNC SWAP APR FUNC CALLED");
 
   const api_key = "5db37e23ce820eb4087f65bc3d79438c";
-  const SUBGRAPH_URL = `https://gateway.thegraph.com/api/${
-    api - key
-  }/subgraphs/id/5zkMe9YoZHMG8FzzKDB5n1jLfGx4JYmRozZsngRtGPdw`;
+  const SUBGRAPH_URL = `https://gateway.thegraph.com/api/${api_key}/subgraphs/id/5zkMe9YoZHMG8FzzKDB5n1jLfGx4JYmRozZsngRtGPdw`;
 
   // Convert all pool addresses to lowercase for comparison
   const lowercasedPoolAddresses = poolAddresses.map((address) =>
@@ -164,6 +162,7 @@ export async function getSyncSwapAPR(
       pairs(first: 1000, orderBy: volumeUSD, orderDirection: desc) {
         reserveUSD
         volumeUSD 
+        createdAtTimestamp
         id
       }
     }
@@ -174,7 +173,7 @@ export async function getSyncSwapAPR(
     const response = await axios.post(SUBGRAPH_URL, { query });
     const pools = response.data.data.pairs;
 
-    console.log("POOLS:", pools);
+    console.log("POOLS:", pools.length);
 
     if (!pools || pools.length === 0) {
       console.error("No SyncSwap pools found");
@@ -186,14 +185,27 @@ export async function getSyncSwapAPR(
       lowercasedPoolAddresses.includes(pool.id)
     );
 
+    console.log("FILTERED POOLS:", filteredPools.length);
+
     // Calculate APR for each filtered pool
     const poolAPRs: APRResult = {};
 
     for (const pool of filteredPools) {
+      console.log("POOL:", pool.id);
       const poolSwapFee = await getPoolFees(pool.id);
-      const weeklyVolume = pool.volumeUSD * 7;
+      console.log("POOL SWAP FEE:", poolSwapFee);
 
-      const annualFees = weeklyVolume * poolSwapFee * 52;
+      console.log("VOLUME:", pool.volumeUSD);
+      console.log("RESERVE:", pool.reserveUSD);
+      console.log("POOL SWAP FEE:", poolSwapFee);
+
+      const totalPoolVolume = pool.volumeUSD;
+      const daysSincePoolCreated = daysSinceTimestamp(pool.createdAtTimestamp);
+
+      const avgDailyVolume = totalPoolVolume / daysSincePoolCreated;
+      console.log("AVG DAILY VOLUME:", avgDailyVolume);
+
+      const annualFees = avgDailyVolume * poolSwapFee * 365;
       const tvlUSD = parseFloat(pool.reserveUSD);
 
       const feeAPR = tvlUSD > 0 ? (annualFees / tvlUSD) * 100 : 0;
@@ -264,30 +276,45 @@ export async function getSyncSwapAPR(
 
 // SyncSwap Example Invocation
 
-const addresses = [
-  "0xbeac8553817d719c83f876681917ab2d7e5c4500",
-  "0x80115c708e12edd42e504c1cd52aea96c547c05c",
-  "0xe6ed575d9627942893f12bf9c2cc3c47cd11d002",
-  "0x01e00f0064fa11bb35d1251df35376d60af7d435",
-  "0xc9d2f9f56904dd71de34f2d696f5afc508f93ac3",
-  "0x0259d9dfb638775858b1d072222237e2ce7111c0",
-  "0xa93472c1b88243793e145b237b7172f1ee547836",
-  "0xfe1fc5128b5f5e7c0742bf4bfcbb5466fdf96e12",
-  "0x57b11c2c0cdc81517662698a48473938e81d5834",
-  "0xb249b76c7bda837b8a507a0e12caeda90d25d32f",
-  "0x45856bd6bb9f076f4c558a4d5932c6c8d832b0d0",
-  "0x12bf23c2fe929c23ab375199efad425e70c0ece1",
-  "0x80115c708e12edd42e504c1cd52aea96c547c05c",
-  "0x58ba6ddb7af82a106219dc412395ad56284bc5b3",
-  "0x12e7a9423d9128287e63017ee6d1f20e1c237f15",
-];
+// const addresses = [
+//   "0xbeac8553817d719c83f876681917ab2d7e5c4500",
+//   "0x80115c708e12edd42e504c1cd52aea96c547c05c",
+//   "0xe6ed575d9627942893f12bf9c2cc3c47cd11d002",
+//   "0x01e00f0064fa11bb35d1251df35376d60af7d435",
+//   "0xc9d2f9f56904dd71de34f2d696f5afc508f93ac3",
+//   "0x0259d9dfb638775858b1d072222237e2ce7111c0",
+//   "0xa93472c1b88243793e145b237b7172f1ee547836",
+//   "0xfe1fc5128b5f5e7c0742bf4bfcbb5466fdf96e12",
+//   "0x57b11c2c0cdc81517662698a48473938e81d5834",
+//   "0xb249b76c7bda837b8a507a0e12caeda90d25d32f",
+//   "0x45856bd6bb9f076f4c558a4d5932c6c8d832b0d0",
+//   "0x12bf23c2fe929c23ab375199efad425e70c0ece1",
+//   "0x80115c708e12edd42e504c1cd52aea96c547c05c",
+//   "0x58ba6ddb7af82a106219dc412395ad56284bc5b3",
+//   "0x12e7a9423d9128287e63017ee6d1f20e1c237f15",
+// ];
 
-(async () => {
-  try {
-    const aprs = await getSyncSwapAPR(addresses);
-    console.log("SyncSwap APRS:", aprs);
-  } catch (error) {
-    console.error("Error getting APRs:", error);
-    process.exit(1);
-  }
-})();
+// (async () => {
+//   try {
+//     const aprs = await getSyncSwapAPR(addresses);
+//     console.log("SyncSwap APRS:", aprs);
+//   } catch (error) {
+//     console.error("Error getting APRs:", error);
+//     process.exit(1);
+//   }
+// })();
+
+function daysSinceTimestamp(timestampStr: string): number {
+  // Convert string timestamp to milliseconds
+  const timestampMs = parseInt(timestampStr) * 1000;
+  const creationDate = new Date(timestampMs);
+
+  // Current date (Feb 11, 2025 00:00 UTC)
+  const currentDate = new Date("2025-02-11T00:00:00Z");
+
+  // Calculate time difference in milliseconds
+  const timeDiff = currentDate.getTime() - creationDate.getTime();
+
+  // Convert milliseconds to days and floor result
+  return Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+}

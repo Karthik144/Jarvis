@@ -64,8 +64,9 @@ export interface PancakePoolData {
   id: string;
 }
 
-export interface SyncSwapPoolData { 
+export interface SyncSwapPoolData {
   id: string;
+  createdAtTimestamp: string;
   reserveUSD: string;
   volumeUSD: string;
 }
