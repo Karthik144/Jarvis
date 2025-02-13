@@ -6,6 +6,7 @@ import {
   APRResult,
 } from "./types";
 import { getKoiFinanceAPR, getPancakeSwapAPR } from "./fetch_base_apr";
+import { getSyncSwapAPR } from "./syncswap-apr-scraper";
 
 const API_BASE_URL = "https://api.merkl.xyz/v4";
 const PROTOCOL_MAP: Record<string, string> = {
@@ -77,7 +78,7 @@ function formatOpportunityOutput(opportunities: EnhancedOpportunity[]): void {
       : "No deposit link";
 
     console.log(
-      `${index + 1}. ${opportunity.pool} | ${totalApr.toFixed(2)}% ` +
+      `${index + 1}. ${opportunity.name} | ${totalApr.toFixed(2)}% ` +
         `(Base: ${opportunity.baseApr.toFixed(
           2
         )}% + Boost: ${opportunity.apr.toFixed(2)}%) | ` +
@@ -91,13 +92,19 @@ async function main() {
     const opportunities = await fetchOpportunities();
     if (!opportunities) return;
 
-    // To-Do: Add logic for SyncSwap and Maverick Protocol
-    const [koiEnhanced, pancakeswapEnhanced] = await Promise.all([
-      enhanceOpportunities(opportunities.koi, getKoiFinanceAPR),
-      enhanceOpportunities(opportunities.pancakeswap, getPancakeSwapAPR),
-    ]);
+    // To-Do: Add logic for Maverick Protocol once finalized
+    const [koiEnhanced, pancakeswapEnhanced, syncswapEnhanced] =
+      await Promise.all([
+        enhanceOpportunities(opportunities.koi, getKoiFinanceAPR),
+        enhanceOpportunities(opportunities.pancakeswap, getPancakeSwapAPR),
+        enhanceOpportunities(opportunities.syncswap, getSyncSwapAPR),
+      ]);
 
-    formatOpportunityOutput([...koiEnhanced, ...pancakeswapEnhanced]);
+    formatOpportunityOutput([
+      ...koiEnhanced,
+      ...pancakeswapEnhanced,
+      ...syncswapEnhanced,
+    ]);
   } catch (error) {
     console.error(`Runtime error: ${error.message}`);
     process.exit(1);

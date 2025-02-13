@@ -1,9 +1,8 @@
 import puppeteer from "puppeteer";
 import { APRResult } from "./types";
 
-async function scrapeAPR(addresses: string[]): Promise<APRResult> {
-  c
-  onst browser = await puppeteer.launch({
+export async function getSyncSwapAPR(addresses: string[]): Promise<APRResult> {
+  const browser = await puppeteer.launch({
     headless: "new",
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
@@ -127,7 +126,7 @@ async function scrapeAPR(addresses: string[]): Promise<APRResult> {
 //   ];
 
 //   try {
-//     const results = await scrapeAPR(addresses);
+//     const results = await getSyncSwapAPR(addresses);
 //     console.log("Final results:", results);
 //   } catch (error) {
 //     console.error("Error occurred:", error);
