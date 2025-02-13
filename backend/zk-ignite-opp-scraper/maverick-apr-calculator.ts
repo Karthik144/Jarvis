@@ -39,9 +39,10 @@ const calculatePoolAPR = (poolData: PoolData, feeTier: number): number => {
 const fetchPoolsAndCalculateAPRs = async (
   chainId: number,
   feeTier: number,
-  apiBaseUrl: string = "https://api.mav.xyz/v2"
+  apiBaseUrl: string = "https://app.mav.xyz/api/v2"
 ): Promise<PoolAPRResult[]> => {
   try {
+    console.log("URL:", `${apiBaseUrl}/api/latest/tickers`);
     // Fetch pool data from API
     const response = await axios.get(`${apiBaseUrl}/api/latest/tickers`, {
       params: {
@@ -82,4 +83,22 @@ const fetchPoolsAndCalculateAPRs = async (
   }
 };
 
-export { fetchPoolsAndCalculateAPRs };
+if (require.main === module) {
+  (async () => {
+    try {
+      // Hardcoded parameters
+      const chainId = 324; // 1 for Ethereum
+      const feeTier = 0.02; // 0.02% fee tier
+
+      const results = await fetchPoolsAndCalculateAPRs(chainId, feeTier);
+      console.log("Pool APRs:");
+      console.table(results);
+      process.exit(0);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Error:", error.message);
+      }
+      process.exit(1);
+    }
+  })();
+}

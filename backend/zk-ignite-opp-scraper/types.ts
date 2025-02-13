@@ -53,6 +53,9 @@ export interface EnhancedOpportunity extends Opportunity {
   baseApr: number;
 }
 
+export interface ProtocolOpportunities {
+  [key: string]: Opportunity[];
+}
 // APR Calculation Types
 export interface PancakePoolData {
   feeTier: string;
@@ -64,11 +67,10 @@ export interface PancakePoolData {
   id: string;
 }
 
-export interface SyncSwapPoolData {
-  id: string;
-  createdAtTimestamp: string;
-  reserveUSD: string;
-  volumeUSD: string;
+export interface PancakeSubgraphResponse {
+  data: {
+    pools: SyncSwapPoolData[];
+  };
 }
 
 export interface KoiPoolData {
@@ -77,6 +79,12 @@ export interface KoiPoolData {
     feesUSD: string;
   }[];
   id: string;
+}
+
+export interface KoiSubgraphResponse {
+  data: {
+    pools: KoiPoolData[];
+  };
 }
 
 export interface APRResult {
