@@ -1,3 +1,5 @@
+// This code fetches UniswapV3 pools, calculating a 7D APR and logs it out in descending order
+// NOTE: APR calculation uses TVL, which includes inactive liquidity as well, potentially underreporting true 7D APR
 import axios from "axios";
 import { createClient } from "@supabase/supabase-js";
 import { Pool, UniswapV3PoolData, UniswapV3SubgraphResponse } from "./types";
